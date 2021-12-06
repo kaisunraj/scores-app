@@ -4,7 +4,7 @@ import pandas as pd
 
 app = Flask(__name__)
 
-print(recording_scores.scores_database)
+#print(recording_scores.scores_database)
 
 @app.route('/')
 def table():
@@ -12,10 +12,13 @@ def table():
     df['Total'] = df.sum(axis=1)
     df.sort_values(by=['Total'], inplace= True, ascending = False)
     df.index += 1
-    return df.to_html()
+    return df.to_html() + '<a href="http://0.0.0.0:8080/coffee>This is a link</a>'
+
+@app.route('/coffee')
+def coffee():
+    return render_template('example.html')
 
 if __name__ == "__main__":
     app.debug = True
     app.run(host="0.0.0.0", port=5000)
-
 
