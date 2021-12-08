@@ -34,3 +34,4 @@ scores_database = []
 for i in team.instances:
     scores_database.append(i.scores_database)
 
+data_input = []
