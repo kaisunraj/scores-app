@@ -1,68 +1,78 @@
 from flask import Flask, render_template, request
-import recording_scores
 import pandas as pd
 import json
-import events
+from pandas_dfs import event_dfs, to_pandas_df
 
 app = Flask(__name__)
 
-#print(recording_scores.scores_database)
-
 @app.route('/')
-def table():
-    df = pd.DataFrame(recording_scores.scores_database)
-    df['Total'] = df.sum(axis=1)
-    df.sort_values(by=['Total'], inplace= True, ascending = False)
-    df.index += 1
-    html = df.to_html(classes='table table-striped text-center', justify='center')
-    return render_template("home_page_top.html") + html + render_template("home_page_bottom.html")
-
-@app.route('/scores')
 def scores():
-    with open(r'/Users/kaisunraj/scores_app/data.json', 'r') as f:
-        data = f.readlines()
     try:
-        data = data[0][:-1]
-        df = pd.read_json(data, lines=True)
-        df = df.pivot(index='Team',columns='Event',values='Score')
-        df['Total'] = df.sum(axis=1)
-        df.sort_values(by=['Total'], inplace= True, ascending = False)
+        event_1 = event_dfs('event_1')
+        event_2 = event_dfs('event_2')
+        event_3 = event_dfs('event_3')
+        df = event_1[['Points']].merge(event_2[['Points']], on='Team').merge(event_3[['Points']], on='Team')
+        df['Total Points'] = df.sum(axis=1)
+        df['Rank'] = df['Total Points'].rank(method='dense', ascending=True)
+        df.sort_values(by='Rank', ascending=True)
+        df = df.rename(columns={'Points_x':'Event 1', 'Points_y':'Event 2', 'Points':'Event 1',})
         html = df.to_html(classes='table table-striped text-center', justify='center')
-    except: 
-        html = '''
-        <h2> There are no scores yet </h2>
-        '''
+    except:
+        try:
+            event_1 = event_dfs('event_1')
+            event_2 = event_dfs('event_2')
+            df = event_1[['Points']].merge(event_2[['Points']], on='Team')
+            df['Total Points'] = df.sum(axis=1)
+            df['Rank'] = df['Total Points'].rank(method='dense', ascending=True)
+            df.sort_values(by='Rank', ascending=True)
+            df = df.rename(columns={'Points_x':'Event 1', 'Points_y':'Event 2', 'Points':'Event 1',})
+            html = df.to_html(classes='table table-striped text-center', justify='center')
+        except:
+            try: 
+                event_1 = event_dfs('event_1')
+                df = event_1[['Points']]
+                df['Total Points'] = df.sum(axis=1)
+                df['Rank'] = df['Total Points'].rank(method='dense', ascending=True)
+                df.sort_values(by='Rank', ascending=True)
+                df = df.rename(columns={'Points_x':'Event 1', 'Points_y':'Event 2', 'Points':'Event 1',})
+                html = df.to_html(classes='table table-striped text-center', justify='center')
+            except: 
+                html = '''
+                <h2> There are no scores yet </h2>
+                '''
     return render_template("home_page_top.html") + html + render_template("home_page_bottom.html")
     
 
 @app.route('/workout1')
 def workout1():
-    return render_template("workout1.html")
+    try:
+        df = to_pandas_df('event_1')
+        html = df.to_html()
+    except:
+        html = '<h2>There are no scores for this event yet</h2>'
+    return render_template("workout1.html") + '<br>' + html
     
 @app.route('/workout2')
 def workout2():
-    return render_template("workout2.html")
+    try:
+        df = to_pandas_df('event_2')
+        html = df.to_html()
+    except:
+        html = '<h2>There are no scores for this event yet</h2>'
+    return render_template("workout2.html") + '<br>' + html
 
 @app.route('/workout3')
 def workout3():
-    return render_template("workout3.html")
+    try:
+        df = to_pandas_df('event_3')
+        html = df.to_html()
+    except:
+        html = '<h2>There are no scores for this event yet</h2>'
+    return render_template("workout3.html") + html
 
 @app.route('/form')
 def form():
     return render_template('form.html')
-
-# @app.route('/data', methods = ['POST','GET'])
-# def data():
-#     if request.method == 'GET':
-#         return f"The URL /data is accessed directly. Try going to '/form' to submit form"
-#     if request.method == 'POST':
-#         form_data = request.form
-#         recording_scores.data_input.append(dict(form_data))
-#         with open('data.json', 'a') as fp:
-#             json.dump(dict(form_data), fp)
-#             fp.write(',')
-#         return render_template('data.html',form_data = form_data)
-
 
 @app.route('/data', methods = ['POST','GET'])
 def data():
@@ -70,17 +80,19 @@ def data():
         return f"The URL /data is accessed directly. Try going to '/form' to submit form"
     if request.method == 'POST':
         form_data = request.form
-        if request.form['Event'].lower() not in events.event_names:
-            events.event_names.append(request.form['Event'].lower())
-        for i in events.event_names:
-            if request.form['Event'].lower() == i:
+        with open('events_list.txt', 'r') as el:
+            events_str = str(el.readlines()[0])[:-1]
+            event_names = events_str.split(',')
+        for i in event_names:
+            if request.form['Event'].lower() == i.strip():
                 file_name = i.replace(' ','_') + '.json'
                 with open(file_name, 'a') as fp:
                     json.dump(dict(form_data), fp)
                     fp.write(',')
             else:
                 pass
-        return render_template('data.html',form_data = form_data) + f'<p>{str(events.event_names)}</p>'
+        return render_template('data.html',form_data = form_data)
+
 
 
 if __name__ == "__main__":

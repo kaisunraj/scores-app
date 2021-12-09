@@ -1,18 +1,45 @@
 <!DOCTYPE html>
 <html>
+    <head>
+        <style>
+            .button {
+                border: none;
+                color: purple;
+                padding: 10px 15px;
+                text-align: center;
+                text-decoration: none;
+                display: inline-block;
+                font-size: 16px;
+                margin: 4px 2px;
+                transition-duration: 0.4s;
+                cursor: pointer;
+            }
+
+            .button1 {
+                background-color: green;
+                color: white;
+                border: 2px solid purple;
+            }
+
+            .button2 {
+                background-color: rebeccapurple;
+                color: white;
+                border: 2px solid green;
+            }
+        </style>
+    </head>
     <body>
         <br>
         <b>
-            <a href="http://0.0.0.0:5000/workout1">Workout 1</a><br>
+            <a href="http://0.0.0.0:5000/workout1"><button class="button button1" {background-color: green} > Workout 1 </button></a>
+
+            <a href="http://0.0.0.0:5000/workout2"><button class="button button1"> Workout 2 </button></a>
+
+            <a href="http://0.0.0.0:5000/workout3"><button class="button button1"> Workout 3 </button></a>
+            <br><br>
         </b>
         <b>
-            <a href="http://0.0.0.0:5000/workout2">Workout 2</a><br>
-        </b>
-        <b>
-            <a href="http://0.0.0.0:5000/workout3">Workout 3</a><br>
-        </b>
-        <b>
-            <a href="http://0.0.0.0:5000/form">Form</a><br>
+            <a href="http://0.0.0.0:5000/form"><button class="button button2"> Form </button></a><br>
         </b>
     </body>  
 </html>
