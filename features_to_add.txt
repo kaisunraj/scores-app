@@ -1,0 +1,1 @@
+1. Handling ranking for time being by lowers score whilst for lifting events it should be highest score.

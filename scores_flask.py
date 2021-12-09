@@ -1,16 +1,16 @@
 from flask import Flask, render_template, request
 import pandas as pd
 import json
-from pandas_dfs import event_dfs, to_pandas_df
+from pandas_dfs import event_dfs_max, event_dfs_min, to_pandas_df_min, to_pandas_df_max
 
 app = Flask(__name__)
 
 @app.route('/')
 def scores():
     try:
-        event_1 = event_dfs('event_1')
-        event_2 = event_dfs('event_2')
-        event_3 = event_dfs('event_3')
+        event_1 = event_dfs_min('event_1')
+        event_2 = event_dfs_max('event_2')
+        event_3 = event_dfs_min('event_3')
         df = event_1[['Points']].merge(event_2[['Points']], on='Team').merge(event_3[['Points']], on='Team')
         df['Total Points'] = df.sum(axis=1)
         df['Rank'] = df['Total Points'].rank(method='dense', ascending=True)
@@ -19,8 +19,8 @@ def scores():
         html = df.to_html(classes='table table-striped text-center', justify='center')
     except:
         try:
-            event_1 = event_dfs('event_1')
-            event_2 = event_dfs('event_2')
+            event_1 = event_dfs_min('event_1')
+            event_2 = event_dfs_max('event_2')
             df = event_1[['Points']].merge(event_2[['Points']], on='Team')
             df['Total Points'] = df.sum(axis=1)
             df['Rank'] = df['Total Points'].rank(method='dense', ascending=True)
@@ -29,7 +29,7 @@ def scores():
             html = df.to_html(classes='table table-striped text-center', justify='center')
         except:
             try: 
-                event_1 = event_dfs('event_1')
+                event_1 = event_dfs_min('event_1')
                 df = event_1[['Points']]
                 df['Total Points'] = df.sum(axis=1)
                 df['Rank'] = df['Total Points'].rank(method='dense', ascending=True)
@@ -46,7 +46,7 @@ def scores():
 @app.route('/workout1')
 def workout1():
     try:
-        df = to_pandas_df('event_1')
+        df = to_pandas_df_min('event_1')
         html = df.to_html()
     except:
         html = '<h2>There are no scores for this event yet</h2>'
@@ -55,7 +55,7 @@ def workout1():
 @app.route('/workout2')
 def workout2():
     try:
-        df = to_pandas_df('event_2')
+        df = to_pandas_df_max('event_2')
         html = df.to_html()
     except:
         html = '<h2>There are no scores for this event yet</h2>'
@@ -64,7 +64,7 @@ def workout2():
 @app.route('/workout3')
 def workout3():
     try:
-        df = to_pandas_df('event_3')
+        df = to_pandas_df_min('event_3')
         html = df.to_html()
     except:
         html = '<h2>There are no scores for this event yet</h2>'
